@@ -17,6 +17,27 @@ export default (app) => {
 		});
 	});
 
+	// Token endpoint - requires authentication
+	app.get('/auth/token', requiresAuth(), async (req, res) => {
+		try {
+			if (!req.oidc.accessToken) {
+				throw new Error('No access token available');
+			}
+
+			res.send({
+				access_token: req.oidc.accessToken,
+				token_type: 'Bearer',
+				user: req.oidc.user
+			});
+		} catch (error) {
+			console.error('Token error:', error);
+			res.status(500).send({
+				error: 'Could not retrieve access token',
+				details: error.message
+			});
+		}
+	});
+
 	// User profile endpoint - requires authentication
 	app.get('/profile', requiresAuth(), (req, res) => {
 		res.send({

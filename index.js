@@ -18,6 +18,11 @@ const config = {
 	routes: {
 		login: '/login',
 		callback: '/callback'
+	},
+	authorizationParams: {
+		response_type: 'code',
+		audience: process.env.AUTH0_AUDIENCE,
+		scope: 'openid profile email'
 	}
 };
 
