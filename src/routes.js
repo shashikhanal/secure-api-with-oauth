@@ -1,5 +1,12 @@
 import pkg from 'express-openid-connect';
 const { requiresAuth } = pkg;
+import { auth as requireJWT } from 'express-oauth2-jwt-bearer';
+
+const jwtCheck = requireJWT({
+	audience: process.env.AUTH0_AUDIENCE,
+	issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+	tokenSigningAlg: 'RS256'
+});
 
 export default (app) => {
 	app.get('/', (req, res) => {
@@ -38,17 +45,32 @@ export default (app) => {
 		}
 	});
 
-	// User profile endpoint - requires authentication
+	// User profile endpoint - requires session auth
 	app.get('/profile', requiresAuth(), (req, res) => {
 		res.send({
 			user: req.oidc.user
 		});
 	});
 
-	app.get('/protected', requiresAuth(), (req, res) => {
+	// Protected API endpoint - requires JWT token
+	app.get('/protected', jwtCheck, (req, res) => {
 		res.send({
 			message: 'Protected endpoint',
-			user: req.oidc.user
+			token_details: {
+				// Standard JWT claims
+				sub: req.auth.sub,  // The subject (usually the user ID)
+				iss: req.auth.iss,  // The issuer (Auth0 domain)
+				aud: req.auth.aud,  // The audience (your API identifier)
+				iat: req.auth.iat,  // Issued at (timestamp)
+				exp: req.auth.exp,  // Expiration time (timestamp)
+
+				// Auth0 specific claims
+				azp: req.auth.azp,  // Authorized party (client ID)
+				scope: req.auth.scope,  // Granted scopes
+
+				// Full token payload for reference
+				full_payload: req.auth
+			}
 		});
 	});
 };
