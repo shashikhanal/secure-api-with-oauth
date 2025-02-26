@@ -22,7 +22,9 @@ const config = {
 	authorizationParams: {
 		response_type: 'code',
 		audience: process.env.AUTH0_AUDIENCE,
-		scope: 'openid profile email'
+		scope: 'openid profile email',
+		// Request all possible permissions (in practice, you might want to request fewer)
+		permissions: 'read:profile read:messages admin:access read:admin-messages'
 	}
 };
 

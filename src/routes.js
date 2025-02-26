@@ -1,6 +1,7 @@
 import pkg from 'express-openid-connect';
 const { requiresAuth } = pkg;
 import { auth as requireJWT } from 'express-oauth2-jwt-bearer';
+import { checkPermissions } from './middleware/checkPermissions.js';
 
 const jwtCheck = requireJWT({
 	audience: process.env.AUTH0_AUDIENCE,
@@ -45,32 +46,51 @@ export default (app) => {
 		}
 	});
 
-	// User profile endpoint - requires session auth
-	app.get('/profile', requiresAuth(), (req, res) => {
-		res.send({
-			user: req.oidc.user
-		});
+	// User profile endpoint - requires read:profile permission
+	app.get('/profile',
+		jwtCheck,
+		checkPermissions(['read:profile']),
+		(req, res) => {
+			res.send({
+				user: req.auth
+			});
 	});
 
-	// Protected API endpoint - requires JWT token
-	app.get('/protected', jwtCheck, (req, res) => {
-		res.send({
-			message: 'Protected endpoint',
-			token_details: {
-				// Standard JWT claims
-				sub: req.auth.sub,  // The subject (usually the user ID)
-				iss: req.auth.iss,  // The issuer (Auth0 domain)
-				aud: req.auth.aud,  // The audience (your API identifier)
-				iat: req.auth.iat,  // Issued at (timestamp)
-				exp: req.auth.exp,  // Expiration time (timestamp)
+	// Protected API endpoint - requires read:messages permission
+	app.get('/protected',
+		jwtCheck,
+		checkPermissions(['read:admin-messages']), // read:messages
+		(req, res) => {
+			res.send({
+				message: 'Protected endpoint',
+				token_details: {
+					// Standard JWT claims
+					sub: req.auth.sub,
+					iss: req.auth.iss,
+					aud: req.auth.aud,
+					iat: req.auth.iat,
+					exp: req.auth.exp,
+					// Auth0 specific claims
+					azp: req.auth.azp,
+					scope: req.auth.scope,
+					permissions: req.auth.permissions,
+					// Full token payload for reference
+					full_payload: req.auth
+				}
+			});
+	});
 
-				// Auth0 specific claims
-				azp: req.auth.azp,  // Authorized party (client ID)
-				scope: req.auth.scope,  // Granted scopes
-
-				// Full token payload for reference
-				full_payload: req.auth
-			}
-		});
+	// Admin endpoint - requires admin permission
+	app.get('/admin',
+		jwtCheck,
+		checkPermissions(['admin:access']),
+		(req, res) => {
+			res.send({
+				message: 'Admin endpoint',
+				admin_data: {
+					sensitive: 'This is sensitive admin data',
+					user: req.auth
+				}
+			});
 	});
 };
