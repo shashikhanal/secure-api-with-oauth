@@ -61,7 +61,7 @@ AUTH0_AUDIENCE=<audience_from_auth0>
 
 1. Start the server:
 ```bash
-npm start
+npm run dev
 ```
 
 2. Visit `http://localhost:3000` in your browser
@@ -72,7 +72,7 @@ npm start
 http://localhost:3000/auth/token
 
 # Use token in API requests
-curl http://localhost:3000/api/protected \
+curl http://localhost:3000/protected \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
