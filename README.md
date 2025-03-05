@@ -1,3 +1,5 @@
+> **Note:** This is a part of [this blog post](https://levelup.gitconnected.com/building-secure-apis-oauth-2-0-and-role-based-access-control-rbac-with-auth0-6e1e41e594e9) in Medium.
+
 # Building Secure APIs: OAuth 2.0 and Role-Based Access Control (RBAC) with Auth0
 
 A NodeJs application demonstrating OAuth 2.0 implementation with Auth0, featuring both web authentication and API validation with role-based access control(RBAC).
